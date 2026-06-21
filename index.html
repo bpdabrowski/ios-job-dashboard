@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>iOS Roles — Morning Briefing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #FBFBFD;
+    --surface: #FFFFFF;
+    --border: #E7E7EE;
+    --ink: #17171C;
+    --muted: #71717F;
+    --faint: #A6A6B2;
+    --accent: #5B4FE0;
+    --accent-soft: #EEECFC;
+    --ok: #12A66B;
+    --warn: #C9512B;
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", "Menlo", monospace;
+    --shadow: 0 1px 2px rgba(20,20,40,.04), 0 8px 24px rgba(20,20,40,.04);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* ---------- Morning briefing header (the signature) ---------- */
+  .brief {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 28px 30px;
+    box-shadow: var(--shadow);
+    margin-bottom: 28px;
+  }
+
+  .brief__eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 14px;
+  }
+
+  .brief__line {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .brief__count {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 700;
+    font-size: clamp(40px, 7vw, 66px);
+    line-height: 1;
+    letter-spacing: -.02em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .brief__label {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: clamp(18px, 2.6vw, 24px);
+    color: var(--ink);
+    max-width: 26ch;
+  }
+
+  .brief__meta {
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 18px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .brief__meta b { color: var(--ink); font-weight: 600; }
+
+  .brief__actions { margin-left: auto; display: flex; gap: 10px; }
+
+  .btn {
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 9px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .btn:hover { background: #F6F6FA; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn--primary:hover { background: #4B40C9; }
+  .btn--primary:disabled { opacity: .5; cursor: default; }
+
+  /* ---------- Filter bar ---------- */
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: .02em;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: all .14s ease;
+  }
+  .chip:hover { color: var(--ink); }
+  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chip[aria-pressed="true"] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+
+  /* ---------- Company grid ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px 18px 14px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    min-height: 132px;
+    animation: rise .4s ease both;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
+
+  .card.is-hidden { display: none; }
+
+  .card__head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 12px;
+  }
+
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--faint); flex: none;
+  }
+  .dot--ok { background: var(--ok); }
+  .dot--link { background: var(--faint); }
+  .dot--err { background: var(--warn); }
+  .dot--loading { background: var(--accent); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+  @media (prefers-reduced-motion: reduce) { .dot--loading { animation: none; } }
+
+  .card__name {
+    font-family: "Space Grotesk", sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    margin: 0;
+    flex: 1;
+  }
+
+  .card__newcount {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+
+  .card__loc {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: -4px 0 12px;
+  }
+  .card__loc .la {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .roles { list-style: none; margin: 0; padding: 0; }
+  .role {
+    padding: 7px 0;
+    border-top: 1px solid #F1F1F6;
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+  .role:first-child { border-top: none; }
+  .role a {
+    text-decoration: none;
+    font-size: 13.5px;
+    color: var(--ink);
+    flex: 1;
+  }
+  .role a:hover { color: var(--accent); }
+  .role__loc { font-size: 11px; color: var(--faint); font-family: var(--mono); white-space: nowrap; }
+  .role__new {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: .08em;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 4px;
+    padding: 1px 5px;
+    align-self: center;
+  }
+
+  .card__msg {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 2px 0 0;
+  }
+
+  .card__foot {
+    margin-top: auto;
+    padding-top: 12px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .card__link {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    text-decoration: none;
+    color: var(--muted);
+    border-bottom: 1px solid transparent;
+    transition: color .14s ease, border-color .14s ease;
+  }
+  .card__link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .skeleton {
+    height: 13px; border-radius: 5px;
+    background: linear-gradient(90deg, #F1F1F6 25%, #E9E9F0 50%, #F1F1F6 75%);
+    background-size: 200% 100%;
+    animation: sweep 1.3s linear infinite;
+    margin: 8px 0;
+  }
+  @keyframes sweep { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+
+  footer {
+    margin-top: 40px;
+    font-size: 12px;
+    color: var(--faint);
+    text-align: center;
+    line-height: 1.7;
+  }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="brief" aria-live="polite">
+    <p class="brief__eyebrow">Morning briefing</p>
+    <div class="brief__line">
+      <span class="brief__count" id="newCount">—</span>
+      <span class="brief__label" id="newLabel">new iOS-relevant roles since you last looked</span>
+    </div>
+    <div class="brief__meta">
+      <span>Last visit: <b id="lastVisit">first time here</b></span>
+      <span>Checked: <b id="checkedAt">—</b></span>
+      <span><b id="liveCount">0</b> boards live · <b id="linkCount">0</b> link-only</span>
+      <span class="brief__actions">
+        <button class="btn" id="refreshBtn">Refresh</button>
+        <button class="btn btn--primary" id="seenBtn" disabled>Mark all seen</button>
+      </span>
+    </div>
+  </section>
+
+  <div class="filters" id="filters" role="group" aria-label="Filter companies">
+    <button class="chip" data-filter="all" aria-pressed="true">All</button>
+    <button class="chip" data-filter="new" aria-pressed="false">New roles</button>
+    <button class="chip" data-filter="la" aria-pressed="false">LA / SoCal office</button>
+    <button class="chip" data-filter="remote" aria-pressed="false">Remote-friendly</button>
+    <button class="chip" data-filter="live" aria-pressed="false">Live boards</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    Personal job-search tool · roles fetched live from public ATS boards, filtered to iOS / Swift / mobile titles.<br />
+    "New" is tracked in this browser only (localStorage). Salary links go to levels.fyi.
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   COMPANY LIST
+   ------------------------------------------------------------
+   type "ats"  -> live fetch + iOS filter, with link fallback
+   type "link" -> styled card linking to a careers search
+   Slugs marked // ? are best-guess; if a board shows "couldn't
+   load", open its careers page, copy the real slug from the URL
+   (boards.greenhouse.io/SLUG, jobs.lever.co/SLUG,
+   jobs.ashbyhq.com/SLUG) and fix it here.
+   ============================================================ */
+const COMPANIES = [
+  // ---- Confirmed remote-friendly, live ATS ----
+  { name:"Linear",    type:"ats", ats:"ashby",      slug:"linear",    loc:"Remote-first", la:false, levels:"linear" }, // ?
+  { name:"Spotify",   type:"ats", ats:"lever",      slug:"spotify",   loc:"Work from anywhere", la:false, levels:"spotify" }, // ?
+  { name:"Reddit",    type:"ats", ats:"greenhouse", slug:"reddit",    loc:"Work from anywhere", la:false, levels:"reddit" }, // ?
+  { name:"Discord",   type:"ats", ats:"greenhouse", slug:"discord",   loc:"Flexible · remote roles", la:false, levels:"discord" }, // ?
+  { name:"Pinterest", type:"ats", ats:"greenhouse", slug:"pinterest", loc:"PinFlex · remote", la:false, levels:"pinterest" }, // ?
+  { name:"AllTrails", type:"ats", ats:"lever",      slug:"alltrails", loc:"Remote-first", la:false, levels:"alltrails" },
+  { name:"Patreon",   type:"ats", ats:"ashby",      slug:"patreon",   loc:"Hybrid · remote", la:false, levels:"patreon" },
+  { name:"Substack",  type:"ats", ats:"ashby",      slug:"substack",  loc:"Remote-first", la:false, levels:"substack" },
+  { name:"Life360",   type:"ats", ats:"greenhouse", slug:"life360",   loc:"Remote-first", la:false, levels:"life360" },
+  { name:"Figma",     type:"ats", ats:"greenhouse", slug:"figma",     loc:"Hybrid · remote option", la:false, levels:"figma" }, // ?
+  { name:"Airbnb",    type:"ats", ats:"greenhouse", slug:"airbnb",    loc:"Live & work anywhere", la:false, levels:"airbnb" }, // ?
+  { name:"Coinbase",  type:"ats", ats:"greenhouse", slug:"coinbase",  loc:"Remote-first · fintech", la:false, levels:"coinbase" }, // ? fintech — your call
+
+  // ---- Has SoCal office, live ATS ----
+  { name:"Headspace", type:"ats", ats:"greenhouse", slug:"hs",        loc:"Santa Monica + remote", la:true, levels:"headspace" },
+
+  // ---- Office-first but included per your request, live ATS ----
+  { name:"Notion",     type:"ats", ats:"ashby",      slug:"notion",     loc:"SF · 3 days in office", la:false, levels:"notion" },
+  { name:"Duolingo",   type:"ats", ats:"greenhouse", slug:"duolingo",   loc:"Pittsburgh · hybrid", la:false, levels:"duolingo" },
+  { name:"Strava",     type:"ats", ats:"ashby",      slug:"Strava",     loc:"SF · hybrid", la:false, levels:"strava" },
+  { name:"Oura",       type:"ats", ats:"greenhouse", slug:"oura",       loc:"SF · hybrid", la:false, levels:"oura" },
+  { name:"Bumble",     type:"ats", ats:"lever",      slug:"bumbleinc",  loc:"Austin · hybrid", la:false, levels:"bumble" },
+  { name:"Perplexity", type:"ats", ats:"ashby",      slug:"perplexity", loc:"SF · 4 days in office", la:false, levels:"perplexity" }, // ?
+  { name:"OpenAI",     type:"ats", ats:"ashby",      slug:"openai",     loc:"SF · office-first", la:false, levels:"openai" },
+  { name:"Anthropic",  type:"ats", ats:"greenhouse", slug:"anthropic",  loc:"SF/NYC · office-first", la:false, levels:"anthropic" },
+  { name:"Robinhood",  type:"ats", ats:"greenhouse", slug:"robinhood",  loc:"Hybrid · fintech", la:false, levels:"robinhood" }, // fintech — your call
+
+  // ---- Big tech / custom sites: link cards (SoCal offices noted) ----
+  { name:"Apple",     type:"link", la:true,  loc:"Culver City · San Diego",
+    careers:"https://jobs.apple.com/en-us/search?search=iOS&location=united-states-USA", levels:"apple" },
+  { name:"Amazon",    type:"link", la:true,  loc:"Santa Monica · Culver City · Irvine · San Diego",
+    careers:"https://www.amazon.jobs/en/search?base_query=iOS%20engineer&loc_query=California", levels:"amazon" },
+  { name:"Meta",      type:"link", la:true,  loc:"Playa Vista",
+    careers:"https://www.metacareers.com/jobs?q=iOS", levels:"facebook" },
+  { name:"Microsoft", type:"link", la:true,  loc:"Playa Vista · Santa Monica (Xbox)",
+    careers:"https://jobs.careers.microsoft.com/global/en/search?q=iOS&lc=California", levels:"microsoft" },
+  { name:"Snap",      type:"link", la:true,  loc:"Santa Monica (HQ)",
+    careers:"https://careers.snap.com/jobs?search=iOS", levels:"snap" },
+  { name:"Netflix",   type:"link", la:false, loc:"LA offices are non-eng · core eng in Los Gatos",
+    careers:"https://explore.jobs.netflix.net/careers?query=iOS", levels:"netflix" },
+  { name:"Google",    type:"link", la:false, loc:"LA presence unverified for SWE",
+    careers:"https://www.google.com/about/careers/applications/jobs/results/?q=iOS%20engineer", levels:"google" },
+
+  // ---- Remote-friendly, ATS unconfirmed: link cards ----
+  { name:"Calm",      type:"link", la:false, loc:"Remote-first",
+    careers:"https://www.calm.com/careers", levels:"calm" },
+  { name:"Canva",     type:"link", la:false, loc:"Remote / distributed",
+    careers:"https://www.canva.com/careers/jobs/", levels:"canva" },
+  { name:"Webflow",   type:"link", la:false, loc:"Remote-first",
+    careers:"https://webflow.com/careers", levels:"webflow" },
+  { name:"Etsy",      type:"link", la:false, loc:"Unverified — check on apply",
+    careers:"https://careers.etsy.com/", levels:"etsy" },
+];
+
+/* iOS-relevance filter for fetched titles */
+const IOS_RE = /\b(ios|swift|swiftui|objective[- ]?c|mobile|apple\s+platform)\b/i;
+
+/* ATS endpoint + board URL builders */
+const ATS = {
+  greenhouse: {
+    api:  s => `https://boards-api.greenhouse.io/v1/boards/${s}/jobs`,
+    board:s => `https://boards.greenhouse.io/${s}`,
+    parse: d => (d.jobs||[]).map(j => ({
+      id:String(j.id), title:j.title||"",
+      loc:(j.location&&j.location.name)||"", url:j.absolute_url
+    })),
+  },
+  lever: {
+    api:  s => `https://api.lever.co/v0/postings/${s}?mode=json`,
+    board:s => `https://jobs.lever.co/${s}`,
+    parse: d => (Array.isArray(d)?d:[]).map(j => ({
+      id:String(j.id), title:j.text||"",
+      loc:(j.categories&&j.categories.location)||"", url:j.hostedUrl
+    })),
+  },
+  ashby: {
+    api:  s => `https://api.ashbyhq.com/posting-api/job-board/${s}`,
+    board:s => `https://jobs.ashbyhq.com/${s}`,
+    parse: d => (d.jobs||[]).map(j => ({
+      id:String(j.id||j.jobId), title:j.title||"",
+      loc:j.location||(j.address&&j.address.postalAddress&&j.address.postalAddress.addressLocality)||"",
+      url:j.jobUrl||j.applyUrl||j.jobPostingUrl
+    })),
+  },
+};
+
+const levelsUrl = slug =>
+  `https://www.levels.fyi/companies/${slug}/salaries/software-engineer`;
+
+/* ---------- State ---------- */
+const LS_SEEN = "iosjobs.seen.v1";
+const LS_VISIT = "iosjobs.lastVisit.v1";
+let seen = new Set(JSON.parse(localStorage.getItem(LS_SEEN) || "[]"));
+const lastVisitRaw = localStorage.getItem(LS_VISIT);
+let activeFilter = "all";
+const results = {}; // name -> {status, jobs, error}
+
+const $ = id => document.getElementById(id);
+const grid = $("grid");
+
+/* ---------- Render ---------- */
+function locHtml(c){
+  return c.la
+    ? `<span class="la">◆ ${c.loc}</span>`
+    : c.loc;
+}
+
+function cardSkeleton(c){
+  const el = document.createElement("article");
+  el.className = "card";
+  el.dataset.name = c.name;
+  el.innerHTML = `
+    <div class="card__head">
+      <span class="dot ${c.type==='link'?'dot--link':'dot--loading'}"></span>
+      <h2 class="card__name">${c.name}</h2>
+    </div>
+    <p class="card__loc">${locHtml(c)}</p>
+    <div class="card__body"></div>
+    <div class="card__foot">
+      ${c.type==='ats'
+        ? `<a class="card__link" target="_blank" rel="noopener" href="${ATS[c.ats].board(c.slug)}">careers ↗</a>`
+        : `<a class="card__link" target="_blank" rel="noopener" href="${c.careers}">search careers ↗</a>`}
+      <a class="card__link" target="_blank" rel="noopener" href="${levelsUrl(c.levels)}">salary ↗</a>
+    </div>`;
+  const body = el.querySelector(".card__body");
+  if (c.type === "link") {
+    body.innerHTML = `<p class="card__msg">Custom careers site — opens a pre-filtered iOS search.</p>`;
+  } else {
+    body.innerHTML = `<div class="skeleton" style="width:80%"></div><div class="skeleton" style="width:60%"></div>`;
+  }
+  grid.appendChild(el);
+}
+
+function renderCardResult(c){
+  const el = grid.querySelector(`.card[data-name="${CSS.escape(c.name)}"]`);
+  if (!el) return;
+  const r = results[c.name];
+  const dot = el.querySelector(".dot");
+  const body = el.querySelector(".card__body");
+  const head = el.querySelector(".card__head");
+
+  // remove any prior newcount badge
+  const oldBadge = head.querySelector(".card__newcount");
+  if (oldBadge) oldBadge.remove();
+
+  if (r.status === "err") {
+    dot.className = "dot dot--err";
+    body.innerHTML = `<p class="card__msg">Couldn't load live — open the board to check, or fix the slug.</p>`;
+    return;
+  }
+
+  dot.className = "dot dot--ok";
+  const jobs = r.jobs;
+  const newN = jobs.filter(j => !seen.has(c.name + ":" + j.id)).length;
+  if (newN > 0){
+    const b = document.createElement("span");
+    b.className = "card__newcount";
+    b.textContent = `${newN} new`;
+    head.appendChild(b);
+  }
+
+  if (jobs.length === 0){
+    body.innerHTML = `<p class="card__msg">No iOS / mobile roles open right now.</p>`;
+    return;
+  }
+  const ul = document.createElement("ul");
+  ul.className = "roles";
+  jobs.slice(0, 8).forEach(j => {
+    const isNew = !seen.has(c.name + ":" + j.id);
+    const li = document.createElement("li");
+    li.className = "role";
+    li.innerHTML =
+      `${isNew ? '<span class="role__new">NEW</span>' : ''}` +
+      `<a target="_blank" rel="noopener" href="${j.url}">${j.title}</a>` +
+      `${j.loc ? `<span class="role__loc">${j.loc.split(",")[0]}</span>` : ''}`;
+    ul.appendChild(li);
+  });
+  body.innerHTML = "";
+  body.appendChild(ul);
+  if (jobs.length > 8){
+    const more = document.createElement("p");
+    more.className = "card__msg";
+    more.style.marginTop = "8px";
+    more.textContent = `+ ${jobs.length - 8} more on the board`;
+    body.appendChild(more);
+  }
+}
+
+/* ---------- Fetch ---------- */
+async function loadCompany(c){
+  if (c.type !== "ats") return;
+  const def = ATS[c.ats];
+  try {
+    const res = await fetch(def.api(c.slug), { headers:{ "Accept":"application/json" }});
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const all = def.parse(data).filter(j => j.title && IOS_RE.test(j.title));
+    results[c.name] = { status:"ok", jobs: all };
+  } catch (e) {
+    results[c.name] = { status:"err", error: String(e) };
+  }
+  renderCardResult(c);
+  updateBrief();
+  applyFilter();
+}
+
+/* ---------- Briefing + summary ---------- */
+function fmtDate(iso){
+  if (!iso) return "first time here";
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined,{month:"short",day:"numeric"}) +
+    " · " + d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+}
+
+function allShownJobs(){
+  const out = [];
+  COMPANIES.forEach(c => {
+    const r = results[c.name];
+    if (r && r.status === "ok") r.jobs.forEach(j => out.push(c.name + ":" + j.id));
+  });
+  return out;
+}
+
+function updateBrief(){
+  let live = 0, link = 0, newTotal = 0;
+  COMPANIES.forEach(c => {
+    if (c.type === "link") { link++; return; }
+    const r = results[c.name];
+    if (r && r.status === "ok"){
+      live++;
+      newTotal += r.jobs.filter(j => !seen.has(c.name + ":" + j.id)).length;
+    }
+  });
+  $("newCount").textContent = newTotal;
+  $("newLabel").textContent = newTotal === 1
+    ? "new iOS-relevant role since you last looked"
+    : "new iOS-relevant roles since you last looked";
+  $("liveCount").textContent = live;
+  $("linkCount").textContent = link;
+  $("seenBtn").disabled = newTotal === 0;
+}
+
+/* ---------- Filtering ---------- */
+function applyFilter(){
+  COMPANIES.forEach(c => {
+    const el = grid.querySelector(`.card[data-name="${CSS.escape(c.name)}"]`);
+    if (!el) return;
+    const r = results[c.name];
+    let show = true;
+    if (activeFilter === "la")      show = !!c.la;
+    else if (activeFilter === "remote") show = /remote|anywhere|flexible|distributed|pinflex/i.test(c.loc);
+    else if (activeFilter === "live")   show = c.type === "ats";
+    else if (activeFilter === "new")    show = !!(r && r.status==="ok" &&
+                              r.jobs.some(j => !seen.has(c.name + ":" + j.id)));
+    el.classList.toggle("is-hidden", !show);
+  });
+}
+
+/* ---------- Events ---------- */
+$("filters").addEventListener("click", e => {
+  const btn = e.target.closest(".chip");
+  if (!btn) return;
+  activeFilter = btn.dataset.filter;
+  document.querySelectorAll(".chip").forEach(ch =>
+    ch.setAttribute("aria-pressed", String(ch === btn)));
+  applyFilter();
+});
+
+$("seenBtn").addEventListener("click", () => {
+  allShownJobs().forEach(id => seen.add(id));
+  localStorage.setItem(LS_SEEN, JSON.stringify([...seen]));
+  localStorage.setItem(LS_VISIT, new Date().toISOString());
+  $("lastVisit").textContent = "just now";
+  COMPANIES.forEach(c => { if (c.type==="ats") renderCardResult(c); });
+  updateBrief();
+  applyFilter();
+});
+
+$("refreshBtn").addEventListener("click", () => location.reload());
+
+/* ---------- Boot ---------- */
+function boot(){
+  $("lastVisit").textContent = fmtDate(lastVisitRaw);
+  $("checkedAt").textContent = new Date().toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
+  COMPANIES.forEach(cardSkeleton);
+  updateBrief();
+  COMPANIES.forEach(loadCompany);
+}
+boot();
+</script>
+</body>
+</html>
