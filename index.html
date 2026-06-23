@@ -270,6 +270,27 @@
   }
   .card__link:hover { color: var(--accent); border-color: var(--accent); }
 
+  .card__prep {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    margin-top: 10px;
+    border-top: 1px solid #F1F1F6;
+  }
+  .prep-pill {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .01em;
+    text-decoration: none;
+    color: var(--muted);
+    background: #F6F6FA;
+    border-radius: 6px;
+    padding: 4px 8px;
+    transition: background .14s ease, color .14s ease;
+  }
+  .prep-pill:hover { background: var(--accent-soft); color: var(--accent); }
+
   .skeleton {
     height: 13px; border-radius: 5px;
     background: linear-gradient(90deg, #F1F1F6 25%, #E9E9F0 50%, #F1F1F6 75%);
@@ -366,6 +387,28 @@ const COMPANIES = [
   { name:"Anthropic",  type:"ats", ats:"greenhouse", slug:"anthropic",  loc:"SF/NYC · office-first", la:false, levels:"anthropic" },
   { name:"Robinhood",  type:"ats", ats:"greenhouse", slug:"robinhood",  loc:"Hybrid · fintech", la:false, levels:"robinhood" }, // fintech — your call
 
+  // ---- Added per your request: SeatGeek, StubHub, Scout Motors, Whatnot,
+  // Thrive Market, Tailscale, Hims & Hers, Zillow, Fetch, Underdog Fantasy ----
+  { name:"SeatGeek",   type:"ats", ats:"greenhouse", slug:"seatgeek",       loc:"NYC HQ · remote-friendly (WorkGeek)", la:false, levels:"seatgeek" },
+  { name:"StubHub",    type:"ats", ats:"greenhouse", slug:"stubhubinc", boardAlt:true,
+    loc:"Hybrid · NYC / LA roles exist", la:true, levels:"stubhub" },
+  { name:"Scout Motors", type:"ats", ats:"greenhouse", slug:"scoutmotors",
+    loc:"Fremont, CA HQ · some remote-eligible mobile roles", la:false, levels:"scout-motors" },
+  { name:"Whatnot",    type:"ats", ats:"ashby",      slug:"whatnot",
+    loc:"LA is an eligible hub · many remote eng roles", la:true, levels:"whatnot" },
+  { name:"Thrive Market", type:"link", la:true, loc:"Playa Vista, CA HQ + remote",
+    careers:"https://www.thrivemarketjobs.com/", levels:"thrive-market" }, // custom careers site, not a confirmed public ATS slug
+  { name:"Tailscale",  type:"ats", ats:"greenhouse", slug:"tailscale", boardAlt:true,
+    loc:"Fully remote (US/Canada/UK)", la:false, levels:"tailscale" },
+  { name:"Hims & Hers", type:"ats", ats:"ashby",     slug:"hims-and-hers",
+    loc:"Remote-friendly · some LA-area roles", la:true, levels:"hims-and-hers" },
+  { name:"Zillow",     type:"link", la:false, loc:"Cloud HQ — remote-flexible for most roles",
+    careers:"https://www.zillow.com/careers/", levels:"zillow" }, // custom ATS, not a confirmed public slug
+  { name:"Fetch",      type:"ats", ats:"greenhouse", slug:"fetchrewards",
+    loc:"Remote (US)", la:false, levels:"fetch" },
+  { name:"Underdog Fantasy", type:"ats", ats:"greenhouse", slug:"underdogfantasy", boardAlt:true,
+    loc:"Remote-first (US)", la:false, levels:"underdog-fantasy" },
+
   // ---- Big tech / custom sites: link cards (SoCal offices noted) ----
   { name:"Apple",     type:"link", la:true,  loc:"Culver City · San Diego",
     careers:"https://jobs.apple.com/en-us/search?search=iOS&location=united-states-USA", levels:"apple" },
@@ -401,6 +444,10 @@ const ATS = {
   greenhouse: {
     api:  s => `https://boards-api.greenhouse.io/v1/boards/${s}/jobs`,
     board:s => `https://boards.greenhouse.io/${s}`,
+    // some companies (StubHub, Tailscale, Underdog) display their board at
+    // job-boards.greenhouse.io instead of boards.greenhouse.io — the public
+    // JSON API token is identical either way, this only affects the link shown
+    boardAlt:s => `https://job-boards.greenhouse.io/${s}`,
     parse: d => (d.jobs||[]).map(j => ({
       id:String(j.id), title:j.title||"",
       loc:(j.location&&j.location.name)||"", url:j.absolute_url
@@ -427,6 +474,22 @@ const ATS = {
 
 const levelsUrl = slug =>
   `https://www.levels.fyi/companies/${slug}/salaries/software-engineer`;
+
+/* ---------- Generated prep-resource links ----------
+   These are search URLs, not hand-curated pages — they never go
+   stale and always return something, even for obscure companies.
+   Google search is used instead of guessing site-specific search
+   URL formats (e.g. Glassdoor's interview search bakes the query's
+   character length into the URL, which is too fragile to generate). */
+const gsearch = q => `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+
+function prepLinks(name){
+  return [
+    { label: "Glassdoor interview ↗", url: gsearch(`${name} software engineer interview questions site:glassdoor.com`) },
+    { label: "Eng blog ↗", url: gsearch(`${name} engineering blog iOS`) },
+    { label: "Culture / Blind ↗", url: gsearch(`${name} iOS interview culture (site:teamblind.com OR site:reddit.com)`) },
+  ];
+}
 
 /* ---------- State ---------- */
 const LS_SEEN = "iosjobs.seen.v1";
@@ -459,9 +522,14 @@ function cardSkeleton(c){
     <div class="card__body"></div>
     <div class="card__foot">
       ${c.type==='ats'
-        ? `<a class="card__link" target="_blank" rel="noopener" href="${ATS[c.ats].board(c.slug)}">careers ↗</a>`
+        ? `<a class="card__link" target="_blank" rel="noopener" href="${c.boardAlt ? ATS[c.ats].boardAlt(c.slug) : ATS[c.ats].board(c.slug)}">careers ↗</a>`
         : `<a class="card__link" target="_blank" rel="noopener" href="${c.careers}">search careers ↗</a>`}
       <a class="card__link" target="_blank" rel="noopener" href="${levelsUrl(c.levels)}">salary ↗</a>
+    </div>
+    <div class="card__prep">
+      ${prepLinks(c.name).map(p =>
+        `<a class="prep-pill" target="_blank" rel="noopener" href="${p.url}">${p.label}</a>`
+      ).join("")}
     </div>`;
   const body = el.querySelector(".card__body");
   if (c.type === "link") {
