@@ -291,6 +291,24 @@
   }
   .prep-pill:hover { background: var(--accent-soft); color: var(--accent); }
 
+  /* Glassdoor rating badges */
+  .gd-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 1px 7px 2px;
+    border-radius: 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+    letter-spacing: 0.01em;
+  }
+  .gd-high { background: rgba(16,185,129,0.13); color: #059669; }
+  .gd-mid  { background: rgba(245,158,11,0.13); color: #b45309; }
+  .gd-low  { background: rgba(239,68,68,0.13);  color: #dc2626; }
+
   .skeleton {
     height: 13px; border-radius: 5px;
     background: linear-gradient(90deg, #F1F1F6 25%, #E9E9F0 50%, #F1F1F6 75%);
@@ -446,6 +464,22 @@ const COMPANIES = [
     careers:"https://careers.etsy.com/", levels:"etsy" },
 ];
 
+/* Glassdoor overall company ratings — sourced June 2026 */
+const GD_RATINGS = {
+  "Linear":4.6, "Spotify":4.0, "Reddit":3.9, "Discord":4.1,
+  "Pinterest":3.6, "AllTrails":2.9, "Patreon":3.6, "Substack":4.6,
+  "Life360":3.9, "Figma":3.6, "Airbnb":4.3, "Coinbase":3.7,
+  "Headspace":2.5, "Notion":4.3, "Duolingo":4.3, "Strava":3.5,
+  "Oura":3.5, "Bumble":2.7, "Perplexity":4.6, "OpenAI":4.2,
+  "Anthropic":4.4, "Robinhood":3.6, "SeatGeek":4.0, "StubHub":3.5,
+  "Scout Motors":4.3, "Whatnot":4.2, "Tailscale":4.5,
+  "Hims & Hers":3.5, "Fetch":3.4, "Underdog Fantasy":4.1,
+  "Babylist":3.3, "Tinder":3.3, "Chess.com":3.8, "TikTok":3.6,
+  "Thrive Market":3.3, "Zillow":3.7, "Apple":4.1, "Amazon":3.4,
+  "Meta":4.1, "Microsoft":4.2, "Snap":3.6, "Netflix":4.0,
+  "Google":4.3, "Calm":3.5, "Canva":4.0, "Webflow":3.7, "Etsy":3.5,
+};
+
 /* iOS-relevance filter for fetched titles */
 const IOS_RE = /\b(ios|swift|swiftui|objective[- ]?c|mobile|apple\s+platform)\b/i;
 
@@ -519,6 +553,13 @@ function locHtml(c){
     : c.loc;
 }
 
+function gdBadge(name){
+  const r = GD_RATINGS[name];
+  if (r === undefined) return "";
+  const cls = r >= 4.0 ? "gd-high" : r >= 3.3 ? "gd-mid" : "gd-low";
+  return `<span class="gd-badge ${cls}" title="Glassdoor rating">★ ${r.toFixed(1)}</span>`;
+}
+
 function cardSkeleton(c){
   const el = document.createElement("article");
   el.className = "card";
@@ -526,7 +567,7 @@ function cardSkeleton(c){
   el.innerHTML = `
     <div class="card__head">
       <span class="dot ${c.type==='link'?'dot--link':'dot--loading'}"></span>
-      <h2 class="card__name">${c.name}</h2>
+      <h2 class="card__name">${c.name}${gdBadge(c.name)}</h2>
     </div>
     <p class="card__loc">${locHtml(c)}</p>
     <div class="card__body"></div>
