@@ -149,6 +149,79 @@
     color: #fff;
   }
 
+  /* ---------- Interview filters ---------- */
+  .ifilters {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 16px 18px 6px;
+    margin-bottom: 22px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 36px;
+  }
+  .ifilters__title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 10px;
+  }
+  .ifilters__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .ifilters__row .chip {
+    flex: none;
+    width: 136px;
+    white-space: nowrap;
+    display: flex;
+    justify-content: space-between;
+  }
+  .ifilters__desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .ifilters__note {
+    grid-column: 1 / -1;
+    font-size: 11.5px;
+    color: var(--faint);
+    margin: 2px 0 10px;
+  }
+  .chip__n { opacity: .6; margin-left: 4px; }
+
+  .card__iv {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin: -4px 0 12px;
+  }
+  .iv-pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .02em;
+    border-radius: 5px;
+    padding: 1px 6px 2px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .iv-pill--ai-yes { background: rgba(16,185,129,0.13); color: #059669; }
+  .iv-pill--ai-no  { background: rgba(239,68,68,0.11);  color: #dc2626; }
+  .iv-pill--none   { background: #F6F6FA; color: var(--faint); }
+
+  @media (max-width: 760px) {
+    .ifilters { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .ifilters { padding: 14px 14px 4px; }
+    .ifilters__row { align-items: flex-start; gap: 10px; }
+    .ifilters__row .chip { width: 124px; }
+  }
+
   /* ---------- Company grid ---------- */
   .grid {
     display: grid;
@@ -357,6 +430,48 @@
     <button class="chip" data-filter="live" aria-pressed="false">Live boards</button>
   </div>
 
+  <section class="ifilters" aria-label="Filter by interview style">
+    <div role="group" aria-label="Interview format" data-group="format">
+      <p class="ifilters__title">Interview format</p>
+      <div class="ifilters__row">
+        <button class="chip" data-value="any" aria-pressed="true">Any</button>
+        <span class="ifilters__desc">Show every company regardless of format.</span>
+      </div>
+      <div class="ifilters__row">
+        <button class="chip" data-value="dsa" aria-pressed="false">DSA</button>
+        <span class="ifilters__desc">LeetCode-style algorithm problems in a shared editor, sometimes with an iOS twist.</span>
+      </div>
+      <div class="ifilters__row">
+        <button class="chip" data-value="practical" aria-pressed="false">Practical</button>
+        <span class="ifilters__desc">Build or extend a small iOS app in Xcode: live, paired, or as a take-home.</span>
+      </div>
+      <div class="ifilters__row">
+        <button class="chip" data-value="progressive" aria-pressed="false">Progressive</button>
+        <span class="ifilters__desc">One stateful system (bank, key-value store) built across ~4 unlocking levels in ~90 min.</span>
+      </div>
+    </div>
+    <div role="group" aria-label="AI in interviews" data-group="ai">
+      <p class="ifilters__title">AI in interviews</p>
+      <div class="ifilters__row">
+        <button class="chip" data-value="any" aria-pressed="true">Any</button>
+        <span class="ifilters__desc">Show every company regardless of AI policy.</span>
+      </div>
+      <div class="ifilters__row">
+        <button class="chip" data-value="yes" aria-pressed="false">Allows AI</button>
+        <span class="ifilters__desc">At least one round lets you use an AI assistant.</span>
+      </div>
+      <div class="ifilters__row">
+        <button class="chip" data-value="no" aria-pressed="false">No AI</button>
+        <span class="ifilters__desc">Policy or candidate reports say AI tools are banned unless an interviewer says otherwise.</span>
+      </div>
+      <div class="ifilters__row">
+        <button class="chip" data-value="unknown" aria-pressed="false">No data</button>
+        <span class="ifilters__desc">No 2025–26 policy or candidate report found yet.</span>
+      </div>
+    </div>
+    <p class="ifilters__note">From candidate reports and company policies researched Oct 2026. Samples are small and mostly general SWE loops, so confirm the format with your recruiter. Hover a card's tags for the source.</p>
+  </section>
+
   <div class="grid" id="grid"></div>
 
   <footer>
@@ -480,6 +595,63 @@ const GD_RATINGS = {
   "Google":4.3, "Calm":3.5, "Canva":4.0, "Webflow":3.7, "Etsy":3.5,
 };
 
+/* Interview formats + AI policy — researched Oct 2026 from Glassdoor iOS
+   reviews, PracHub, Taro, Blind, prep guides and company policy pages.
+   formats: "dsa" | "practical" | "progressive"
+   ai: "yes" (at least one round allows AI) | "no" (banned) | omitted = no data
+   note: shown as a tooltip on the card's tags. Companies not listed here
+   have no usable data yet. */
+const INTERVIEW = {
+  "Robinhood": { formats:["practical","dsa"], ai:"no",
+    note:"iOS: timer app built in Xcode (reported 2025–26), list-from-scratch screen, coding + mobile design. AI banned unless the interviewer allows it." },
+  "Pinterest": { formats:["practical","dsa"], ai:"yes",
+    note:"iOS 2025: three Xcode build rounds in one onsite after a LeetCode screen. SWE 2026: AI-assisted onsite round (add cache to a repo, review AI code)." },
+  "Apple":     { formats:["dsa"], ai:"yes",
+    note:"iOS 2026: CoderPad DSA, iOS domain round, mobile architecture. AI-assisted coding rounds reported in 2026 for several roles (none iOS-specific yet)." },
+  "Meta":      { formats:["dsa"], ai:"yes",
+    note:"iOS 2026: Swift algorithms (e.g. UIView subview tree). SWE onsite has an AI-enabled round since Oct 2025; Swift not in its reported language list." },
+  "Google":    { formats:["dsa"], ai:"no",
+    note:"iOS 2026: three LeetCode-style rounds. AI tools prohibited; in-person interviews returning." },
+  "Snap":      { formats:["dsa"],
+    note:"iOS 2025–26: LeetCode-medium screens (reverse words, BFS)." },
+  "Netflix":   { formats:["practical","dsa"],
+    note:"iOS 2025: take-home app, then defend your choices + data structures and architecture." },
+  "Airbnb":    { formats:["progressive","dsa"],
+    note:"SWE 2026: 4-level progressive OA (banking, file store, task manager) plus standalone coding questions. iOS-specific data is from 2020." },
+  "Coinbase":  { formats:["progressive","dsa"], ai:"yes",
+    note:"SWE 2026: AI-assisted OA + AI-assisted onsite round (bug, feature, PR review, prod debug); progressive banking / in-memory DB problems; crypto-flavored algorithms." },
+  "Amazon":    { formats:["dsa"], ai:"yes",
+    note:"Jan 2026: SDE online assessment includes an interactive AI assistant. No 2026 iOS reports." },
+  "Discord":   { formats:["practical","dsa"],
+    note:"Mobile guide 2026: screen leans practical (fix a broken component, chat with infinite scroll); some roles are React Native." },
+  "Duolingo":  { formats:["practical","dsa"],
+    note:"Mobile guide 2026: possible take-home, code review, DSA, mobile system design." },
+  "Reddit":    { formats:["practical","dsa"],
+    note:"iOS 2025: practical data screen with evolving requirements, UIKit-heavy onsite coding, mobile architecture." },
+  "Spotify":   { formats:["dsa","practical"],
+    note:"SWE 2026: DSA + system design + 'how do you use AI'. iOS build-an-app round last reported 2022." },
+  "Whatnot":   { formats:["dsa"],
+    note:"SWE late 2025–26: Karat/HireVue-style DSA pre-screen, then two DSA rounds." },
+  "OpenAI":    { formats:["practical"],
+    note:"Senior iOS 2025: add a chat feature to an existing app, refactor chatbot code, design usage limits." },
+  "Oura":      { formats:["practical"],
+    note:"Senior iOS 2025: live pair coding in a provided Xcode project, system design, behavioral." },
+  "Anthropic": { formats:["progressive","practical"], ai:"no",
+    note:"SWE 2026: 90-min 4-level CodeSignal OA; practical live screens. No AI unless instructions say so." },
+  "Tinder":    { formats:["practical"], ai:"no",
+    note:"Match Group policy bans AI in interviews and assessments. iOS build-from-prompt onsite last reported 2021–22." },
+  "TikTok":    { formats:["dsa"],
+    note:"iOS 2024: LeetCode-medium DFS / graph problems on HackerRank." },
+  "Canva":     { formats:[], ai:"yes",
+    note:"AI-assisted coding round replaced the fundamentals screen for backend/frontend (2025). Mobile not mentioned." },
+  "Microsoft": { formats:[], ai:"no",
+    note:"Careers policy: no outside help in assessments or interviews unless explicitly permitted." },
+};
+
+const FORMAT_LABEL = { dsa:"DSA", practical:"Practical", progressive:"Progressive" };
+const ivFor = name => INTERVIEW[name] || { formats:[], note:"" };
+const aiFor = name => ivFor(name).ai || "unknown";
+
 /* iOS-relevance filter for fetched titles */
 const IOS_RE = /\b(ios|swift|swiftui|objective[- ]?c|mobile|apple\s+platform)\b/i;
 
@@ -541,6 +713,8 @@ const LS_VISIT = "iosjobs.lastVisit.v1";
 let seen = new Set(JSON.parse(localStorage.getItem(LS_SEEN) || "[]"));
 const lastVisitRaw = localStorage.getItem(LS_VISIT);
 let activeFilter = "all";
+let activeFormat = "any";
+let activeAI = "any";
 const results = {}; // name -> {status, jobs, error}
 
 const $ = id => document.getElementById(id);
@@ -560,6 +734,17 @@ function gdBadge(name){
   return `<span class="gd-badge ${cls}" title="Glassdoor rating">★ ${r.toFixed(1)}</span>`;
 }
 
+function ivHtml(name){
+  const iv = ivFor(name);
+  const ai = aiFor(name);
+  const tip = (iv.note || "No interview data found yet.").replace(/"/g, "&quot;");
+  const pills = iv.formats.map(f => `<span class="iv-pill">${FORMAT_LABEL[f]}</span>`);
+  if (ai === "yes") pills.push(`<span class="iv-pill iv-pill--ai-yes">AI allowed</span>`);
+  else if (ai === "no") pills.push(`<span class="iv-pill iv-pill--ai-no">No AI</span>`);
+  if (pills.length === 0) pills.push(`<span class="iv-pill iv-pill--none">No interview data</span>`);
+  return `<div class="card__iv" title="${tip}">${pills.join("")}</div>`;
+}
+
 function cardSkeleton(c){
   const el = document.createElement("article");
   el.className = "card";
@@ -570,6 +755,7 @@ function cardSkeleton(c){
       <h2 class="card__name">${c.name}${gdBadge(c.name)}</h2>
     </div>
     <p class="card__loc">${locHtml(c)}</p>
+    ${ivHtml(c.name)}
     <div class="card__body"></div>
     <div class="card__foot">
       ${c.type==='ats'
@@ -712,6 +898,8 @@ function applyFilter(){
     else if (activeFilter === "live")   show = c.type === "ats";
     else if (activeFilter === "new")    show = !!(r && r.status==="ok" &&
                               r.jobs.some(j => !seen.has(c.name + ":" + j.id)));
+    if (activeFormat !== "any") show = show && ivFor(c.name).formats.includes(activeFormat);
+    if (activeAI !== "any")     show = show && aiFor(c.name) === activeAI;
     el.classList.toggle("is-hidden", !show);
   });
 }
@@ -721,10 +909,36 @@ $("filters").addEventListener("click", e => {
   const btn = e.target.closest(".chip");
   if (!btn) return;
   activeFilter = btn.dataset.filter;
-  document.querySelectorAll(".chip").forEach(ch =>
+  $("filters").querySelectorAll(".chip").forEach(ch =>
     ch.setAttribute("aria-pressed", String(ch === btn)));
   applyFilter();
 });
+
+document.querySelectorAll(".ifilters [data-group]").forEach(group => {
+  group.addEventListener("click", e => {
+    const btn = e.target.closest(".chip");
+    if (!btn) return;
+    if (group.dataset.group === "format") activeFormat = btn.dataset.value;
+    else activeAI = btn.dataset.value;
+    group.querySelectorAll(".chip").forEach(ch =>
+      ch.setAttribute("aria-pressed", String(ch === btn)));
+    applyFilter();
+  });
+});
+
+/* Append a company count to each interview chip */
+function labelInterviewCounts(){
+  document.querySelectorAll(".ifilters [data-group]").forEach(group => {
+    group.querySelectorAll(".chip").forEach(ch => {
+      const v = ch.dataset.value;
+      if (v === "any") return;
+      const n = COMPANIES.filter(c => group.dataset.group === "format"
+        ? ivFor(c.name).formats.includes(v)
+        : aiFor(c.name) === v).length;
+      ch.insertAdjacentHTML("beforeend", `<span class="chip__n">${n}</span>`);
+    });
+  });
+}
 
 $("seenBtn").addEventListener("click", () => {
   allShownJobs().forEach(id => seen.add(id));
@@ -743,6 +957,7 @@ function boot(){
   $("lastVisit").textContent = fmtDate(lastVisitRaw);
   $("checkedAt").textContent = new Date().toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
   COMPANIES.forEach(cardSkeleton);
+  labelInterviewCounts();
   updateBrief();
   COMPANIES.forEach(loadCompany);
 }
