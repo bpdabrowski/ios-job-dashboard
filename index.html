@@ -325,6 +325,11 @@
     color: var(--muted);
     margin: 2px 0 0;
   }
+  .card__more {
+    margin-top: 8px; padding: 0; border: 0; background: none; cursor: pointer;
+    font: inherit; font-size: 13px; color: var(--accent);
+  }
+  .card__more:hover { text-decoration: underline; }
   .card__snap { margin-top: 8px; font-size: 11px; color: var(--faint); font-family: var(--mono); }
 
   .card__foot {
@@ -809,6 +814,7 @@ let activeFilter = "all";
 let activeFormat = "any";
 let activeAI = "any";
 const results = {}; // name -> {status, jobs, error}
+const expanded = new Set(); // card names showing every role
 
 const $ = id => document.getElementById(id);
 const grid = $("grid");
@@ -911,7 +917,8 @@ function renderCardResult(c){
   }
   const ul = document.createElement("ul");
   ul.className = "roles";
-  jobs.slice(0, 8).forEach(j => {
+  const showAll = expanded.has(c.name);
+  jobs.slice(0, showAll ? jobs.length : 8).forEach(j => {
     const isNew = !seen.has(c.name + ":" + j.id);
     const li = document.createElement("li");
     li.className = "role";
@@ -924,10 +931,15 @@ function renderCardResult(c){
   body.innerHTML = "";
   body.appendChild(ul);
   if (jobs.length > 8){
-    const more = document.createElement("p");
-    more.className = "card__msg";
-    more.style.marginTop = "8px";
-    more.textContent = `+ ${jobs.length - 8} more on the board`;
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "card__more";
+    more.textContent = showAll ? "Show fewer ▴" : `+ ${jobs.length - 8} more — show all ▾`;
+    more.setAttribute("aria-expanded", String(showAll));
+    more.addEventListener("click", () => {
+      if (expanded.has(c.name)) expanded.delete(c.name); else expanded.add(c.name);
+      renderCardResult(c);
+    });
     body.appendChild(more);
   }
   if (snapNote) body.insertAdjacentHTML("beforeend", snapNote);
